@@ -1,7 +1,7 @@
 ---
 name: Java code Checkstyle
 
-on:
+'on':
   workflow_call:
 
 jobs:
