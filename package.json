@@ -1,8 +1,0 @@
-{
-  "dependencies": {
-    "@commitlint/config-conventional": "^19.8.1",
-    "commitlint": "^19.8.1",
-    "eslint": "^9.35.0",
-    "prettier": "^3.6.2"
-  }
-}
