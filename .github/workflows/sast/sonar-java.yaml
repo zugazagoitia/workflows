@@ -1,7 +1,7 @@
 ---
 name: SonarCloud Java Analysis
 
-on:
+'on':
   workflow_call:
     inputs:
       jacoco-xml-report-path:

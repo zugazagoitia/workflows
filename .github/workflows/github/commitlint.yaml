@@ -1,7 +1,7 @@
 ---
 name: Commitlint Workflow (Conventional Commits)
 
-on:
+'on':
   workflow_call:
 
 permissions:

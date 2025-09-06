@@ -1,42 +1,54 @@
-on:
-    workflow_call:
-      inputs:
-        java-version:
-          required: true
-          type: number
-          description: "Java version to compile." 
-          default: 21
-        build-tool:
-          required: true
-          type: string
-          description: "Build tool to use for the analysis. Must be 'maven' or 'gradle'. Use wrapper for gradle."
-          default: 'maven' 
-  
+---
+name: CodeQL Java Analysis
+
+'on':
+  workflow_call:
+    inputs:
+      java-version:
+        required: true
+        type: number
+        description: "Java version to compile."
+        default: 21
+      build-tool:
+        required: true
+        type: string
+        description: >
+          Build tool to use for the analysis. Must be 'maven' or 'gradle'.
+          Use wrapper for gradle.
+        default: 'maven'
+
 permissions:
   contents: read
 
 jobs:
   codeql:
     permissions:
-        security-events: write # required for uploading SARIF files
-    name: Analyze Java ${{ inputs.java-version }} with ${{ inputs.build-tool }} using CodeQL
-    runs-on: ubuntu-latest      
+      security-events: write  # required for uploading SARIF files
+    name: >
+      Analyze Java ${{ inputs.java-version }} with ${{ inputs.build-tool }}
+      using CodeQL
+    runs-on: ubuntu-latest
     steps:
-
       - name: Checkout code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: >
+          actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        # v4.2.2
         with:
           fetch-depth: 0
 
       - name: Setup Java
-        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        uses: >
+          actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00
+        # v4.7.1
         with:
           distribution: 'temurin'
           java-version: ${{ inputs.java-version }}
           cache: ${{ inputs.build-tool }}
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@ce28f5bb42b7a9f2c824e633a3f6ee835bab6858 # v3.29.0
+        uses: >
+          github/codeql-action/init@ce28f5bb42b7a9f2c824e633a3f6ee835bab6858
+        # v3.29.0
         with:
           languages: java-kotlin
           build-mode: manual
@@ -45,11 +57,13 @@ jobs:
         if: ${{ inputs.build-tool == 'maven' }}
         run: |
           mvn -B package -DskipTests=true
-        
+
       - name: Run build (Gradle)
         if: ${{ inputs.build-tool == 'gradle' }}
         run: |
           ./gradlew build
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@ce28f5bb42b7a9f2c824e633a3f6ee835bab6858 # v3.29.0
+        uses: >
+          github/codeql-action/analyze@ce28f5bb42b7a9f2c824e633a3f6ee835bab6858
+        # v3.29.0
