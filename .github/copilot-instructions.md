@@ -16,7 +16,13 @@ This repository contains reusable GitHub Actions workflows and configuration fil
   - Format JavaScript files: `npx prettier --write *.js` (if needed)
 
 ### Core Repository Structure
-- `.github/workflows/` - Reusable workflow YAML files (Maven CI, Java linting, SAST tools)
+- `.github/workflows/` - Reusable workflow YAML files organized by theme:
+  - `sast/` - Static Analysis Security Testing workflows
+  - `ci-cd/` - Continuous Integration and Deployment workflows  
+  - `security/` - Security-focused workflows
+  - `github/` - GitHub-specific workflows
+  - `testing/` - Testing workflows
+  - `validate-repository.yaml` - Repository validation workflow
 - `.github/actions/install-graphviz/` - Custom action for installing Graphviz across platforms
 - `checkstyle.xml` - Java code style configuration (Google-based)
 - `.eslintrc.js`, `.prettierrc.js`, `commitlint.config.js` - JavaScript/commit formatting configs
@@ -30,7 +36,7 @@ Run these commands EVERY time before making changes:
 npm install prettier eslint @commitlint/config-conventional commitlint
 
 # Validate YAML files - takes 5 seconds. NEVER CANCEL.
-yamllint .github/workflows/*.yaml .github/workflows/*.yml
+yamllint .github/workflows/ .github/actions/
 
 # Check JavaScript formatting - takes 3 seconds. NEVER CANCEL.
 npx prettier --check *.js
@@ -44,9 +50,15 @@ npx prettier --write *.js
 
 ### Working with Workflow Files
 - **DO NOT** modify workflow files without YAML validation first
-- **ALWAYS** check workflow syntax: `yamllint .github/workflows/[filename]`
+- **ALWAYS** check workflow syntax: `yamllint .github/workflows/[folder/filename]`
 - **NEVER** commit workflow files with YAML syntax errors
 - Test workflow changes by creating a test repository that uses the workflows
+- **NEW**: The repository includes `validate-repository.yaml` that automatically validates:
+  - YAML syntax across all workflows
+  - Conventional commit messages
+  - JavaScript formatting
+  - External action version pinning to commit SHA
+  - Security scanning with CodeQL
 
 ### Timing Expectations
 - **NEVER CANCEL** any commands - all validation is fast:
@@ -65,7 +77,7 @@ npx prettier --write *.js
    npm install prettier eslint @commitlint/config-conventional commitlint
    
    # Validate syntax and formatting
-   yamllint .github/workflows/*.yaml .github/workflows/*.yml
+   yamllint .github/workflows/ .github/actions/
    npx prettier --check *.js
    npx commitlint --last --verbose
    ```
