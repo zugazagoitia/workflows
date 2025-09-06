@@ -1,2 +1,10 @@
 #.idea intellij
 .idea
+
+# Node.js dependencies
+node_modules/
+package-lock.json
+package.json
+
+# Temporary files
+*.tar.gz
