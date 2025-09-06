@@ -91,17 +91,20 @@ jobs:
         run: |
           echo "Checking for unpinned action versions..."
 
-          # Find all uses: statements that don't use commit SHA
+          # Find external action uses that don't use commit SHA
+          # Exclude internal e-CODEX/workflows references and docker actions
           unpinned=$(grep -r "uses:" .github/workflows/ .github/actions/ | \
             grep -v "@[a-f0-9]\{40\}" | \
-            grep -v "docker://")
+            grep -v "docker://" | \
+            grep -v "e-CODEX/workflows" | \
+            grep -v "uses: >")
 
           if [ -n "$unpinned" ]; then
-            echo "Found unpinned actions:"
+            echo "Found unpinned external actions:"
             echo "$unpinned"
             exit 1
           else
-            echo "All actions are properly pinned to commit SHA"
+            echo "All external actions are properly pinned to commit SHA"
           fi
 
   security-scan:

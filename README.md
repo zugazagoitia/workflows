@@ -1,10 +1,11 @@
 # Reusable e-CODEX Workflows 
 
-This repository contains reusable workflows for the e-Codex project.
+This repository contains reusable workflows for the e-Codex project, organized by their thematic purpose.
 
 ## [Index](#ecodex-workflows)
 - [Reusable e-CODEX Workflows](#reusable-e-codex-workflows)
   - [Index](#index)
+  - [Repository Structure](#repository-structure)
   - [SAST](#sast)
     - [SonarCloud Java Analysis](#sonarcloud-java-analysis)
       - [SonarCloud Usage](#sonarcloud-usage)
@@ -22,17 +23,29 @@ This repository contains reusable workflows for the e-Codex project.
     - [Maven Snapshot Publish to Repository](#maven-snapshot-publish-to-repository)
       - [Maven Snapshot Usage](#maven-snapshot-usage)
       - [Maven Release Usage](#maven-release-usage)
-    - [CTP Automated Testing](#ctp-automated-testing)
-      - [CTP Testing Usage](#ctp-testing-usage)
   - [Security](#security)
     - [Dependency Review](#dependency-review)
       - [Dependency Review Usage](#dependency-review-usage)
+  - [Testing](#testing)
+    - [CTP Automated Testing](#ctp-automated-testing)
+      - [CTP Testing Usage](#ctp-testing-usage)
   - [Actions](#actions)
     - [Install Graphviz](#install-graphviz)
       - [Install Graphviz Usage](#install-graphviz-usage)
   - [Github Related](#github-related)
     - [Commitlint Conventional Commit Check](#commitlint-conventional-commit-check)
       - [Commitlint Usage](#commitlint-usage)
+
+## Repository Structure
+
+The workflows are organized into thematic folders:
+
+- **`.github/workflows/sast/`** - Static Analysis Security Testing workflows
+- **`.github/workflows/ci-cd/`** - Continuous Integration and Deployment workflows
+- **`.github/workflows/security/`** - Security-focused workflows
+- **`.github/workflows/github/`** - GitHub-specific workflows
+- **`.github/workflows/testing/`** - Testing workflows
+- **`.github/actions/`** - Custom reusable actions
 
 
 
@@ -51,7 +64,7 @@ on:
     types: [opened, synchronize, reopened]
 jobs:
   sonar:
-    uses: e-CODEX/workflows/.github/workflows/sonar-java.yaml@main
+    uses: e-CODEX/workflows/.github/workflows/sast/sonar-java.yaml@main
     with:
         jacoco-xml-report-path: 'target/site/jacoco/jacoco.xml'
         java-version: 21
@@ -90,7 +103,7 @@ on:
     types: [opened, synchronize, reopened]
 jobs:
   qodana:
-    uses: e-CODEX/workflows/.github/workflows/qodana.yaml@main
+    uses: e-CODEX/workflows/.github/workflows/sast/qodana.yaml@main
     secrets: inherit
 ```
 
@@ -119,7 +132,7 @@ on:
 
 jobs:
   codeql:
-    uses: e-CODEX/workflows/.github/workflows/codeql-java.yaml@main
+    uses: e-CODEX/workflows/.github/workflows/sast/codeql-java.yaml@main
     with:
       java-version: 21
       build-tool: 'maven'
@@ -149,7 +162,7 @@ on:
 name: Java code Checkstyle
 jobs:
   checkstyle:
-    uses: e-CODEX/workflows/.github/workflows/java-linting.yaml@main
+    uses: e-CODEX/workflows/.github/workflows/sast/java-linting.yaml@main
 ```
 
 ## CI/CD
@@ -169,7 +182,7 @@ on:
 
 jobs:
   CI:
-    uses: e-CODEX/workflows/.github/workflows/maven-ci.yaml@main
+    uses: e-CODEX/workflows/.github/workflows/ci-cd/maven-ci.yaml@main
     with:
       java-version: 21
       maven-parameters: '-Djacoco.skip=true'
@@ -203,7 +216,7 @@ on:
       - 'v*'
 jobs:
   docker:
-    uses: e-CODEX/workflows/.github/workflows/docker-build-push.yaml@main
+    uses: e-CODEX/workflows/.github/workflows/ci-cd/docker-build-push.yaml@main
     with:
       image-name: 'my-application'
       environment: 'production'
@@ -242,7 +255,7 @@ on:
       - develop
 jobs:
   publish:
-    uses: e-CODEX/workflows/.github/workflows/maven-publish-snapshot.yaml@main
+    uses: e-CODEX/workflows/.github/workflows/ci-cd/maven-publish-snapshot.yaml@main
     with:
       java-version: 21
       maven-parameters: '-DrepositoryId=artifactory'
@@ -268,17 +281,17 @@ on:
       - main
 jobs:
   validate:
-    uses: e-CODEX/workflows/.github/workflows/maven-validate-release-version.yaml@main
+    uses: e-CODEX/workflows/.github/workflows/ci-cd/maven-validate-release-version.yaml@main
         
   tag:
     needs: validate
-    uses: e-CODEX/workflows/.github/workflows/maven-tag-release-version.yaml@main
+    uses: e-CODEX/workflows/.github/workflows/ci-cd/maven-tag-release-version.yaml@main
     with:
       environment: 'production'
         
   publish:
     needs: tag
-    uses: e-CODEX/workflows/.github/workflows/maven-publish-release.yaml@main
+    uses: e-CODEX/workflows/.github/workflows/ci-cd/maven-publish-release.yaml@main
     with:
       java-version: 21
       maven-repo-id: 'releases'
@@ -309,6 +322,8 @@ It requires the following inputs:
 | `maven-parameters` | Extra parameters to pass to Maven  | No       | -       |
 | `maven-repo-id`    | Maven repository ID                | Yes      | -       |
 
+## Testing
+
 ### CTP Automated Testing
 
 This workflow runs automated tests for the CTP (Connecting to Performance) system. It can be triggered manually with specific PR and branch information.
@@ -329,7 +344,7 @@ on:
         type: string
 jobs:
   test:
-    uses: e-CODEX/workflows/.github/workflows/ctp-automated-testing.yml@main
+    uses: e-CODEX/workflows/.github/workflows/testing/ctp-automated-testing.yml@main
 ```
 
 This workflow can also be called by other workflows:
@@ -337,7 +352,7 @@ This workflow can also be called by other workflows:
 ```yaml
 jobs:
   ctp-tests:
-    uses: e-CODEX/workflows/.github/workflows/ctp-automated-testing.yml@main
+    uses: e-CODEX/workflows/.github/workflows/testing/ctp-automated-testing.yml@main
 ```
 
 > [!NOTE]
@@ -355,7 +370,7 @@ This workflow scans dependency manifest files that change as part of a Pull Requ
 on: [pull_request]
 jobs:
   dependency-review:
-    uses: e-CODEX/workflows/.github/workflows/dependency-review.yml@main
+    uses: e-CODEX/workflows/.github/workflows/security/dependency-review.yml@main
 ```
 
 > [!IMPORTANT]
@@ -396,5 +411,5 @@ on:
     types: [opened, synchronize]
 jobs:
   commitlint:
-    uses: e-CODEX/workflows/.github/workflows/commitlint.yaml@main
+    uses: e-CODEX/workflows/.github/workflows/github/commitlint.yaml@main
 ```
