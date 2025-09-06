@@ -1,5 +1,7 @@
+---
 name: "Install Graphviz"
-description: "Installs Graphviz (dot command) on Ubuntu, Windows, or macOS runners"
+description: >
+  Installs Graphviz (dot command) on Ubuntu, Windows, or macOS runners
 runs:
   using: "composite"
   steps:

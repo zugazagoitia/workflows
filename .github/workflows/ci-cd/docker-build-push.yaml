@@ -1,13 +1,20 @@
+---
 name: Create and publish Docker image
-# Create and publish a Docker image to the e-CODEX JFrog, following SemVer and GitFlow conventions
+# Create and publish a Docker image to the e-CODEX JFrog, following SemVer
+# and GitFlow conventions
 # On pushes to develop, build and push a Docker image with the 'edge' label
-# On tag pushes to the main branch, build and push a Docker image with the 'latest' label, as well as the SemVer tags (e.g. '1.2.3', '1.2', '1')
-# On all pushes, build and push a Docker image with the short SHA checksum label
+# On tag pushes to the main branch, build and push a Docker image with the
+# 'latest' label, as well as the SemVer tags (e.g. '1.2.3', '1.2', '1')
+# On all pushes, build and push a Docker image with the short SHA checksum
+# label
 #
-# Authentication to the e-CODEX JFrog is done using the JFrog CLI, which is configured with an OIDC token, obtained from the GitHub Actions OIDC provider
-# Attestation of the Docker image is created and pushed to the e-CODEX JFrog as well as to the GitHub Attestations API
+# Authentication to the e-CODEX JFrog is done using the JFrog CLI, which is
+# configured with an OIDC token, obtained from the GitHub Actions OIDC
+# provider
+# Attestation of the Docker image is created and pushed to the e-CODEX JFrog
+# as well as to the GitHub Attestations API
 
-on: 
+'on':
   workflow_call:
     inputs:
       image-name:
@@ -42,7 +49,7 @@ jobs:
       contents: read
       attestations: write # Required for attestation
       id-token: write # Required for JFrog CLI setup
-       
+
     steps:
 
       - name: Checkout repository
@@ -57,14 +64,14 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
-              
+
       - name: Setup JFrog CLI
         uses: jfrog/setup-jfrog-cli@f748a0599171a192a2668afee8d0497f7c1069df # v4.5.6
         id: setup-jfrog-cli
         env:
             JF_URL: https://scm.ecodex.eu
         with:
-            oidc-provider-name: setup-jfrog    
+            oidc-provider-name: setup-jfrog
 
       - name: Authenticate Docker client
         uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
@@ -85,7 +92,7 @@ jobs:
             type=semver,pattern={{major}}
             type=sha
             type=edge,branch=develop
-      
+
       - name: Build and push Docker image
         id: push
         uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
@@ -102,4 +109,4 @@ jobs:
           subject-name: ${{ inputs.registry }}/${{ inputs.image-name }}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
-    
+

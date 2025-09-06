@@ -1,0 +1,128 @@
+---
+name: Repository Validation
+
+'on':
+  push:
+    branches: [main, develop]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  yaml-lint:
+    name: YAML Syntax Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: >
+          actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Validate YAML files
+        run: |
+          yamllint .github/workflows/ \
+            .github/actions/ \
+            .github/dependabot.yml
+
+  commitlint:
+    name: Conventional Commit Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: >
+          actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: >
+          actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af  # v4.1.0
+        with:
+          node-version: '20'
+
+      - name: Install commitlint
+        run: |
+          npm install --global @commitlint/config-conventional \
+            @commitlint/cli
+
+      - name: Validate commit messages
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            npx commitlint \
+              --from ${{ github.event.pull_request.base.sha }} \
+              --to ${{ github.event.pull_request.head.sha }} --verbose
+          else
+            npx commitlint --from HEAD~1 --to HEAD --verbose
+          fi
+
+  js-format:
+    name: JavaScript Format Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: >
+          actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Setup Node.js
+        uses: >
+          actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af  # v4.1.0
+        with:
+          node-version: '20'
+
+      - name: Install prettier
+        run: npm install --global prettier
+
+      - name: Check JavaScript formatting
+        run: npx prettier --check *.js
+
+  action-version-pinning:
+    name: Action Version Pinning Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: >
+          actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Check action versions are pinned to SHA
+        run: |
+          echo "Checking for unpinned action versions..."
+
+          # Find external action uses that don't use commit SHA
+          # Exclude internal e-CODEX/workflows references and docker actions
+          unpinned=$(grep -r "uses:" .github/workflows/ .github/actions/ | \
+            grep -v "@[a-f0-9]\{40\}" | \
+            grep -v "docker://" | \
+            grep -v "e-CODEX/workflows" | \
+            grep -v "uses: >")
+
+          if [ -n "$unpinned" ]; then
+            echo "Found unpinned external actions:"
+            echo "$unpinned"
+            exit 1
+          else
+            echo "All external actions are properly pinned to commit SHA"
+          fi
+
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - name: Checkout repository
+        uses: >
+          actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Run CodeQL Analysis
+        uses: >
+          github/codeql-action/init@aa578102511db1f4524ed59b8cc2bae4f6e88195
+        with:
+          languages: javascript
+
+      - name: Perform CodeQL Analysis
+        uses: >
+          github/codeql-action/analyze@aa578102511db1f4524ed59b8cc2bae4f6e88195
